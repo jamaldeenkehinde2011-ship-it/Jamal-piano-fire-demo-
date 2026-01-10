@@ -1,0 +1,43 @@
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to bottom, #f0f8ff, #add8e6);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.game-ui {
+  margin-top: 20px;
+}
+
+.piano-container {
+  margin-top: 20px;
+}
+
+.tiles {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 20px;
+}
+
+.tile {
+  width: 60px;
+  height: 60px;
+  background-color: #ffb6c1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+
+.tile:hover {
+  transform: scale(1.2);
+}
+
+.keyboard {
+  margin-top: 30px;
+}

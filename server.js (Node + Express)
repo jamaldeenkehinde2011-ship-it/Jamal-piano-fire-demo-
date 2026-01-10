@@ -1,0 +1,36 @@
+const express = require('express');
+const fileUpload = require('express-fileupload');
+const { exec } = require('child_process');
+const cors = require('cors');
+const path = require('path');
+
+const app = express();
+const PORT = 5000;
+
+app.use(cors());
+app.use(fileUpload());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.post('/upload', (req, res) => {
+  if (!req.files || !req.files.audio) return res.status(400).send('No file uploaded.');
+  
+  const audioFile = req.files.audio;
+  const uploadPath = path.join(__dirname, 'uploads', audioFile.name);
+
+  audioFile.mv(uploadPath, (err) => {
+    if (err) return res.status(500).send(err);
+
+    // Run Python script to analyze audio
+    exec(`python analyze.py "${uploadPath}"`, (error, stdout, stderr) => {
+      if (error) return res.status(500).send(error.message);
+      if (stderr) return res.status(500).send(stderr);
+
+      // Return JSON output
+      res.send(stdout);
+    });
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

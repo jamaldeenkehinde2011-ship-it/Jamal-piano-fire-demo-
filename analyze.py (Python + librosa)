@@ -1,0 +1,39 @@
+import sys
+import librosa
+import json
+import numpy as np
+
+# Input audio file path from command line
+audio_path = sys.argv[1]
+
+# Load audio
+y, sr = librosa.load(audio_path)
+
+# Beat detection
+tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
+beat_times = librosa.frames_to_time(beat_frames)
+
+# Simplified note extraction (based on dominant frequency per beat)
+tiles = []
+keys = ['C4','D4','E4','F4','G4','A4','B4']
+
+for t in beat_times:
+    # Extract a short segment around beat
+    start_sample = int(max(0, t*sr - sr*0.05))
+    end_sample = int(min(len(y), t*sr + sr*0.05))
+    segment = y[start_sample:end_sample]
+
+    # FFT to find dominant frequency
+    fft = np.fft.fft(segment)
+    freqs = np.fft.fftfreq(len(segment), 1/sr)
+    idx = np.argmax(np.abs(fft[:len(fft)//2]))
+    freq = abs(freqs[idx])
+
+    # Map frequency to nearest piano key (C4=261.63Hz, D4=293.66Hz etc)
+    piano_freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88]
+    nearest = min(piano_freqs, key=lambda x: abs(x - freq))
+    note = keys[piano_freqs.index(nearest)]
+    tiles.append({'time': float(t*1000), 'key': note})  # time in ms
+
+# Output JSON
+print(json.dumps(tiles))
